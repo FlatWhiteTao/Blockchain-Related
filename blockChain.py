@@ -6,7 +6,7 @@ import hashlib
 import json
 from time import time
 from uuid import uuid4
-from flask import Flask
+from flask import Flask, jsonfy, request
 
 app = Flask(__name__)
 
@@ -20,7 +20,17 @@ def mine():
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transatcions():
-	return "add a new transaction"
+	values = request.get_json()
+
+	required = ['sender', 'recipient', 'amount']
+	if not all(k in values for k in required):
+		return 'Missing params', 400
+	
+	index = blockchain.new_transatcion(
+		values['sender'], values['recipient'], values['amount'])
+
+	response = {'message': f'New transaction added to Block {index}'}
+	return jsonfy(response), 201
 
 @app.route('/chain', methods=['GET'])
 def full_chain():{
