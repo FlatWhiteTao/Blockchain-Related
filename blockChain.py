@@ -1,6 +1,6 @@
 # Blockchain class 
 # 18/Mar/2018
-
+# FW_Chain
 
 import hashlib
 import json
@@ -122,11 +122,11 @@ def mine():
 def new_transatcions():
 	values = request.get_json()
 
-	required = ['sender', 'recipient', 'amount']
-	if not all(k in values for k in required):
-		return 'Missing params', 400
+	#required = ['sender', 'recipient', 'amount']
+	#if not all(k in values for k in required):
+		#return 'Missing params', 400
 	
-	index = blockchain.new_transatcion(
+	index = blockchain.new_transaction(
 		values['sender'], values['recipient'], values['amount'])
 
 	response = {'message': 'Transaction will be added to Block' + str(index)}
