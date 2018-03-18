@@ -16,7 +16,32 @@ blockchain = Blockchain()
 
 @app.route('/mine', methods=['GET'])
 def mine():
-	return "Mine a new Block"
+	# run PoW algrothim to get the next proof
+	last_block = blockchain.last_block
+	last_proof = last_block['proof']
+	proof = blockchain,proof_of_work(last_proof)
+
+	# one coin reward
+	blockchain.new_transatcion(
+		sender='0',
+		recipient=node_identifier,
+		amount=1,
+	)
+
+	# append to the main chain
+	previous_hash = blockchain.hash(last_block)
+	block = block.new_block(proof, previous_hash)
+
+	response = {
+		'message' : 'New Block Added',
+		'index': block['index'],
+		'transaction': block['transaction'],
+		'proof': block['proof'],
+		'previous_hash': block['previous_hash'],
+	}
+
+	return jsonfy(response), 200
+	
 
 @app.route('/transactions/new', methods=['POST'])
 def new_transatcions():
