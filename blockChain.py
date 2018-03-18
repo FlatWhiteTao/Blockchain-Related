@@ -14,7 +14,29 @@ class Blockchain(object):
 		self.current_transactions = []
 
 		#Genesis block
-		self.new_block(previous_hash=1, proof=100)
+		#self.new_block(previous_hash=1, proof=100)
+		self.create_genesis_block(previous_hash=1, proof=100)
+
+	def create_genesis_block(self, proof, previous_hash=None):
+		self.current_transactions.append({
+			'sender': 'Tao 67f573c4e7994021a0256a0f19af29ce',
+			'recipient': 'Someone',
+			'amount': 1000
+		})
+
+		block = {
+			'index': len(self.chain) + 1,
+			'name': 'FW_Chain_GenesisBlock',
+			'message': 'The very first and only msg engraved in FW_Chain',
+			'timestamp': time(),
+			'transactions': self.current_transactions,
+			'proof': proof,
+			'previous_hash': previous_hash or self.hash(self.chain[-1]),
+		}
+
+		self.current_transactions = []
+		self.chain.append(block)
+		return block
 
 	def new_block(self, proof, previous_hash=None):
 		# creates a new block and adds it to the chain
@@ -31,7 +53,7 @@ class Blockchain(object):
 			'previous_hash': previous_hash or self.hash(self.chain[-1]),
 		}
 
-		# reset the current transactions
+		# reset the current transactions to empty,
 		self.current_transactions = []
 		self.chain.append(block)
 		return block 
