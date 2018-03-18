@@ -6,67 +6,7 @@ import hashlib
 import json
 from time import time
 from uuid import uuid4
-from flask import Flask, jsonfy, request
-
-app = Flask(__name__)
-
-node_identifier = str(uuid4()).replace('-', '')
-
-blockchain = Blockchain()
-
-@app.route('/mine', methods=['GET'])
-def mine():
-	# run PoW algrothim to get the next proof
-	last_block = blockchain.last_block
-	last_proof = last_block['proof']
-	proof = blockchain,proof_of_work(last_proof)
-
-	# one coin reward
-	blockchain.new_transatcion(
-		sender='0',
-		recipient=node_identifier,
-		amount=1,
-	)
-
-	# append to the main chain
-	previous_hash = blockchain.hash(last_block)
-	block = block.new_block(proof, previous_hash)
-
-	response = {
-		'message' : 'New Block Added',
-		'index': block['index'],
-		'transaction': block['transaction'],
-		'proof': block['proof'],
-		'previous_hash': block['previous_hash'],
-	}
-
-	return jsonfy(response), 200
-	
-
-@app.route('/transactions/new', methods=['POST'])
-def new_transatcions():
-	values = request.get_json()
-
-	required = ['sender', 'recipient', 'amount']
-	if not all(k in values for k in required):
-		return 'Missing params', 400
-	
-	index = blockchain.new_transatcion(
-		values['sender'], values['recipient'], values['amount'])
-
-	response = {'message': f'New transaction added to Block {index}'}
-	return jsonfy(response), 201
-
-@app.route('/chain', methods=['GET'])
-def full_chain():{
-		'chain': blockchain.chain,
-		'length': len(blockchain.chain),
-	}
-	return jsonfy(response), 200
-
-if __name__ == '__main__':
-	app.run(host='0,0,0,0', port=5000)
-
+from flask import Flask, jsonify, request
 
 class Blockchain(object):
 	def __init__(self):
@@ -139,9 +79,72 @@ class Blockchain(object):
 		# valids the proof 
 		# hash(p`p) == "0000........"
 
-		guess = f'{last_proof}{proof}'.encode()
+		guess = (str(last_proof)+str(proof)).encode()
 		guess_hash = hashlib.sha256(guess).hexdigest()
 		return guess_hash[:4] == "0000"
+
+app = Flask(__name__)
+
+node_identifier = str(uuid4()).replace('-', '')
+
+blockchain = Blockchain()
+
+@app.route('/mine', methods=['GET'])
+def mine():
+	# run PoW algrothim to get the next proof
+	last_block = blockchain.last_block
+	last_proof = last_block['proof']
+	proof = blockchain.proof_of_work(last_proof)
+
+	# one coin reward
+	blockchain.new_transaction(
+		sender='0',
+		recipient=node_identifier,
+		amount=1,
+	)
+
+	# append to the main chain
+	previous_hash = blockchain.hash(last_block)
+	block = blockchain.new_block(proof, previous_hash)
+
+	response = {
+		'message' : 'New Block Added',
+		'index': block['index'],
+		'transactions': block['transactions'],
+		'proof': block['proof'],
+		'previous_hash': block['previous_hash'],
+	}
+
+	return jsonify(response), 200
+	
+
+@app.route('/transactions/new', methods=['POST'])
+def new_transatcions():
+	values = request.get_json()
+
+	required = ['sender', 'recipient', 'amount']
+	if not all(k in values for k in required):
+		return 'Missing params', 400
+	
+	index = blockchain.new_transatcion(
+		values['sender'], values['recipient'], values['amount'])
+
+	response = {'message': 'Transaction will be added to Block' + str(index)}
+	return jsonify(response), 201
+
+@app.route('/chain', methods=['GET'])
+def full_chain():
+	response = {
+		'chain': blockchain.chain,
+		'length': len(blockchain.chain),
+	}
+	return jsonify(response), 200
+
+if __name__ == '__main__':
+	app.run(host='localhost', port=5000)
+
+
+
 
 
 
